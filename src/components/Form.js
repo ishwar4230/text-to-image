@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import html2canvas from 'html2canvas';
 import "./formstyle.css";
 
 const Form = () => {
@@ -58,39 +59,44 @@ const Form = () => {
     }, 2000); // Adjust the delay as needed
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (canvasRef.current) {
       const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
-
-      // Clear previous drawings
-      context.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw each image on the canvas
-      imageUrls.forEach((imageUrl, index) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous'; // Enable cross-origin for the images
-        img.src = imageUrl;
-        img.onload = () => {
-          context.drawImage(img, (index % 5) * 50, Math.floor(index / 5) * 50, 50, 50);
-        };
-      });
-
-      // Convert canvas to data URL
-      const panelImageUrl = canvas.toDataURL('image/png');
-
-      // Use the Web Share API to share the image
-      if (navigator.share) {
-        navigator.share({
-          files: [new File([panelImageUrl], 'image_panel.png', { type: 'image/png' })],
-        })
-          .then(() => console.log('Successful share'))
-          .catch((error) => console.log('Error sharing:', error));
-      } else {
-        console.log('Web Share API not supported');
+  
+      try {
+        // Use html2canvas to capture the content of the image panel
+        const canvasDataUrl = await html2canvas(canvas).then((canvas) =>
+          canvas.toDataURL()
+        );
+  
+        // Create a temporary link element
+        const shareLink = document.createElement("a");
+        shareLink.href = canvasDataUrl;
+        shareLink.target = "_blank"; // Open in a new tab/window
+  
+        // Trigger a click on the link to initiate the sharing process
+        shareLink.click();
+      } catch (error) {
+        console.error("Error capturing canvas content:", error);
       }
     }
   };
+  
+  // Function to convert data URL to Blob
+  // Function to convert data URL to Blob
+const dataURLtoBlob = (dataURL) => {
+  const byteString = atob(dataURL.split(',')[1]);
+  const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+
+  return new Blob([ab], { type: mimeString || 'image/png' });
+};
 
   return (
     <div>

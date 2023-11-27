@@ -2,7 +2,7 @@
 
 /* Style for the Image Panel */
 body{
-    background-color: rgb(180, 206, 240);
+    background-color: rgb(200, 208, 219);
 }
 #imgpanel {
     display: flex;
