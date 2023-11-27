@@ -60,6 +60,17 @@ const Form = () => {
   };
 
   const handleShare = async () => {
+    let done=1;
+    for(let i=0;i<10;i++)
+    if(imageUrls[i].length==0)
+    done=0;
+    if(done==0)
+    {
+      alert("Image not loaded yet!");
+      console.log("not loaded!");
+      return;
+    }
+    console.log(imageUrls);
     if (canvasRef.current) {
       const canvas = canvasRef.current;
   
@@ -69,18 +80,28 @@ const Form = () => {
           canvas.toDataURL()
         );
   
-        // Create a temporary link element
-        const shareLink = document.createElement("a");
-        shareLink.href = canvasDataUrl;
-        shareLink.target = "_blank"; // Open in a new tab/window
+        // Convert data URL to Blob
+        const blob = dataURLtoBlob(canvasDataUrl);
   
-        // Trigger a click on the link to initiate the sharing process
-        shareLink.click();
+        // Create a temporary file from the Blob
+        const file = new File([blob], 'image_panel.png', { type: 'image/png' });
+  
+        // Use the Web Share API to share the file
+        if (navigator.share) {
+          navigator.share({
+            files: [file],
+          })
+            .then(() => console.log('Successful share'))
+            .catch((error) => console.log('Error sharing:', error));
+        } else {
+          console.log('Web Share API not supported');
+        }
       } catch (error) {
         console.error("Error capturing canvas content:", error);
       }
     }
   };
+  
   
   // Function to convert data URL to Blob
   // Function to convert data URL to Blob
